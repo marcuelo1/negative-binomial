@@ -5,8 +5,10 @@
     "@hotwired/stimulus": "^3.0.1",
     "@hotwired/turbo-rails": "^7.1.3",
     "@popperjs/core": "^2.11.5",
+    "@stdlib/stats-base-dists-negative-binomial": "^0.0.6",
     "bootstrap": "^5.1.3",
     "bootstrap-icons": "^1.8.3",
+    "chart.js": "^3.8.0",
     "esbuild": "^0.14.43",
     "sass": "^1.52.3"
   },

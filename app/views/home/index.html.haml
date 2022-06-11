@@ -1,0 +1,70 @@
+= render partial: '/layouts/partials/navbar'
+.d-flex{data: {controller: 'home'}}
+  .form-container 
+    = form_with(url: '/', method: 'get', data: {action: 'submit->home#formSubmit'})  do |f|
+      .form-group
+        = f.label :month, "Month", {class: 'form-label'}
+        = f.select :month, options_for_select(@months, params[:month]), {}, {class: 'form-select'}
+      .form-group 
+        = f.label :cases, "No. Of Cases", {class: 'form-label'}
+        = f.text_field :cases, {class: 'form-control', value: params[:cases]}
+      .form-group 
+        = f.label :ave_temp, "Average Temperature (C)", {class: 'form-label'}
+        = f.text_field :ave_temp, {class: 'form-control', value: params[:ave_temp]}
+      .form-group 
+        = f.label :humidity, "Average Relative Humidity (%)", {class: 'form-label'}
+        = f.text_field :humidity, {class: 'form-control', value: params[:humidity]}
+      .form-group 
+        = f.label :wind_speed, "Average Wind Speed (kmph)", {class: 'form-label'}
+        = f.text_field :wind_speed, {class: 'form-control', value: params[:wind_speed]}
+      .form-group 
+        = f.label :num_vaccinated, "Vaccinated Individuals (%)", {class: 'form-label'}
+        = f.text_field :num_vaccinated, {class: 'form-control', value: params[:num_vaccinated]}
+      %br/
+      %center 
+        = f.submit "Calculate", {class: 'btn btn-dark btn-sm'}
+      %br/
+  .data-container 
+    .chart 
+      %canvas#myChart
+    .details 
+      %h4 Results 
+      .row 
+        .col
+          .group.d-flex.justify-content-between 
+            .label Predicted Cases 
+            .predicted-cases.value
+          .group.d-flex.justify-content-between 
+            .label Actual Cases 
+            .actual-cases.value
+          .group.d-flex.justify-content-between 
+            .label Actual and Predicted Cases Difference
+            .actual-predicted-cases-diff.value
+          .group.d-flex.justify-content-between 
+            .label Increase Per Temperature (K)
+            .temp.value
+          .group.d-flex.justify-content-between 
+            .label Increase Per Relative Humidity (%)
+            .humidity.value
+          .group.d-flex.justify-content-between 
+            .label Increase Per Wind Speed (mph)
+            .wind-speed.value
+        .col
+          .group.d-flex.justify-content-between 
+            .label Predicted Cases 
+            .predicted-cases.value
+          .group.d-flex.justify-content-between 
+            .label Actual Cases 
+            .actual-cases.value
+          .group.d-flex.justify-content-between 
+            .label Actual and Predicted Cases Difference
+            .actual-predicted-cases-diff.value
+          .group.d-flex.justify-content-between 
+            .label Increase Per Temperature (K)
+            .temp.value
+          .group.d-flex.justify-content-between 
+            .label Increase Per Relative Humidity (%)
+            .humidity.value
+          .group.d-flex.justify-content-between 
+            .label Increase Per Wind Speed (mph)
+            .wind-speed.value

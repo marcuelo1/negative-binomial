@@ -1,0 +1,63 @@
+.form-container {
+  width: 25%;
+  height: calc(100vh - 56px);
+  background-color: #eaeaea;
+  overflow-y: auto;
+
+  form {
+    width: 80%;
+    margin: auto;
+    margin-top: 20px;
+
+    .form-group {
+      margin-bottom: 15px;
+
+      label {
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 0;
+      }
+
+      select {
+        font-size: 14px;
+      }
+
+      input {
+        font-size: 14px;
+      }
+    }
+  }
+}
+
+.data-container {
+  width: 75%;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+
+  .chart {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    height: 64%;
+    margin-bottom: 150px;
+  }
+
+  .details {
+    width: 100%;
+    height: 36%;
+    background-color: rgb(179, 179, 179);
+    padding: 15px;
+
+    .group {
+      font-size: 14px;
+      margin-bottom: 5px;
+      padding-left: 10px;
+      padding-right: 10px;
+
+      &:hover {
+        color: white;
+        background-color: rgb(29,29,29);
+      }
+    }
+  }
+}
