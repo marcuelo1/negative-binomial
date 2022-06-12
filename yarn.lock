@@ -1450,7 +1450,7 @@
     "@stdlib/math-base-assert-is-nan" "^0.0.x"
     "@stdlib/math-base-special-floor" "^0.0.x"
 
-"@stdlib/stats-base-dists-negative-binomial-pmf@^0.0.x":
+"@stdlib/stats-base-dists-negative-binomial-pmf@^0.0.6", "@stdlib/stats-base-dists-negative-binomial-pmf@^0.0.x":
   "integrity" "sha512-2/vAO8cvIFlY/L6+PVwnPos+0nNStsiH217dv2F+s99XdiU2XkYzDkat+At3GTIUx+lLI6hXcdX5xafvtrZJOA=="
   "resolved" "https://registry.npmjs.org/@stdlib/stats-base-dists-negative-binomial-pmf/-/stats-base-dists-negative-binomial-pmf-0.0.6.tgz"
   "version" "0.0.6"

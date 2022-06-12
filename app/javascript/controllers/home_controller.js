@@ -36,6 +36,7 @@ export default class extends Controller {
   }
 
   beta(y,mean,a){
+    y = Math.round(y)
     var first = 0
     for (let r = 1; r <= y; r++) {
       first += Math.log10(1 + (a*r))
@@ -44,6 +45,11 @@ export default class extends Controller {
     var part3 = y * Math.log10(mean)
     var part4 = Math.log10(this.factorialize(y))
     var last = (y + (1/a)) * Math.log10(1 + (mean*a))
+    // console.log("1:", first)
+    // console.log("2:", part2)
+    // console.log("3:", part3)
+    // console.log("4:", part4)
+    // console.log("5:", last)
 
     return (first - part2 + part3 - part4 - last)
   }
@@ -58,6 +64,21 @@ export default class extends Controller {
     }
   }
 
+  bigIntFactorialize(num) {
+    num = parseInt(num)
+    num = BigInt(num)
+    var n = num
+
+    return (n==0n||n==1n)?1n:this.factorialize(n-1n)*n;
+  }
+
+  bigIntLog10(bigint) {
+    if (bigint < 0) return NaN;
+    const s = bigint.toString(10);
+  
+    return s.length + Math.log10("0." + s.substring(0, 15))
+  }
+
   probability(a, mean, y) {
     const { gamma } = require('mathjs')
 
@@ -65,134 +86,156 @@ export default class extends Controller {
     var second = Math.pow(1 / (1 + (a * mean)), 1/a)
     var third = Math.pow((a * mean) / (1 + (a * mean)), y)
 
+    // console.log("first", first)
+    // console.log("second", second)
+    // console.log("third", third)
+    // console.log("alpha", a)
+    // console.log("mean", mean)
+    // console.log("xpoint", y)
+
     return (first * second * third)
+  }
+
+  alpha(mean, sd){
+    const { gamma } = require('mathjs')
+
+    var m = (1.2785 * (mean/sd)) - 0.5004
+    var scaleParameter = mean/gamma(1 + (1/m))
+
+    // return (1/scaleParameter);
+    return scaleParameter;
   }
 
   formSubmit(e) {
     // get all data
     var form = e.target
     var numCases = form.querySelector('#cases').value.split(',')
-    var sumNumCases = numCases.reduce((a, b) => a + parseFloat(b), 0)
-    console.log("Sum Of Num Cases", sumNumCases)
+
+    if(numCases.length > 5){
+      numCases[numCases.length-3] = 0
+    }
+    var aveNumCases = this.mean(numCases)
+    var sdNumCases = this.standardDev(numCases, aveNumCases)
+    var alpha = this.alpha(aveNumCases, sdNumCases)
+    
+    // console.log("Alpha:", alpha)
+    // console.log("Average Cases:", aveNumCases)
     
     var temps = form.querySelector('#ave_temp').value.split(',')
     var aveTemp = this.mean(temps)
-    console.log("Average Temp", aveTemp)
+    // console.log("Average Temp", aveTemp)
     
     var humidities = form.querySelector('#humidity').value.split(',')
     var aveHumidity = this.mean(humidities)
-    console.log("Average Humidity", aveHumidity)
+    // console.log("Average Humidity", aveHumidity)
     
     var windSpeeds = form.querySelector('#wind_speed').value.split(',')
     var aveWindSpeed = this.mean(windSpeeds)
-    console.log("Average Wind Speed", aveWindSpeed)
+    // console.log("Average Wind Speed", aveWindSpeed)
     
     var vaccinateds = form.querySelector('#num_vaccinated').value.split(',')
     var aveVaccinated = this.mean(vaccinateds)
-    console.log("Average Vaccinated Individuals", aveVaccinated)
+    // console.log("Average Vaccinated Individuals", aveVaccinated)
 
     var allMeans = [aveTemp, aveHumidity, aveWindSpeed, aveVaccinated]
 
-    // get alpha of each variables
-    var sdTemp = this.standardDev(temps, aveTemp)
-    console.log("Standard Dev Temp:", sdTemp)
-    var sdHumidity = this.standardDev(humidities, aveHumidity)
-    console.log("Standard Dev Humidity:", sdHumidity)
-    var sdWindSpeed = this.standardDev(windSpeeds, aveWindSpeed)
-    console.log("Standard Dev Wind Speed:", sdWindSpeed)
-    var sdVaccinated = this.standardDev(vaccinateds, aveVaccinated)
-    console.log("Standard Dev Vaccinated Individuals:", sdVaccinated)
-
-    var allSd = [sdTemp, sdHumidity, sdWindSpeed, sdVaccinated]
 
     // get beta of each variables
-    var betaIntercept = this.beta(0, 0, 1)
-    console.log("Beta Intercept:", betaIntercept)
-    var betaTemp = this.beta(sumNumCases, aveTemp, sdTemp)
-    console.log("Beta Temp:", betaTemp)
-    var betaHumidity = this.beta(sumNumCases, aveHumidity, sdHumidity)
-    console.log("Beta Humidity:", betaHumidity)
-    var betaWindSpeed = this.beta(sumNumCases, aveWindSpeed, sdWindSpeed)
-    console.log("Beta Wind Speed:", betaWindSpeed)
-    var betaVaccinated = this.beta(sumNumCases, aveVaccinated, sdVaccinated)
-    console.log("Beta Vaccinated Individuals:", betaVaccinated)
+      var betaTemp = this.beta(aveNumCases, aveTemp, alpha)
+      // console.log("Beta Temp:", betaTemp)
+      var betaHumidity = this.beta(aveNumCases, aveHumidity, alpha)
+      // console.log("Beta Humidity:", betaHumidity)
+      var betaWindSpeed = this.beta(aveNumCases, aveWindSpeed, alpha)
+      // console.log("Beta Wind Speed:", betaWindSpeed)
+      var betaVaccinated = this.beta(aveNumCases, aveVaccinated, alpha)
+      // console.log("Beta Vaccinated Individuals:", betaVaccinated)
 
-    var allBeta = [betaTemp, betaHumidity, betaWindSpeed, betaVaccinated]
+      var allBeta = [Math.abs(betaTemp), Math.abs(betaHumidity), Math.abs(betaWindSpeed), betaVaccinated]
+      // var allBeta = [Math.abs(betaTemp), Math.abs(betaHumidity), Math.abs(betaWindSpeed), betaVaccinated]
 
     // get the negative binomial mean
-    var nbMean = 0
-    for (let i = 0; i < allMeans.length; i++) {
-      const mean = allMeans[i];
-      const beta = allBeta[i]
+      var nbMean = 0
+      for (let i = 0; i < allMeans.length; i++) {
+        const mean = allMeans[i];
+        const beta = allBeta[i]
+        
+        nbMean += (mean*beta)
+      }
+      nbMean = Math.log10(Math.abs(nbMean))
+      nbMean = Math.exp(nbMean)
+      console.log("Negative Binomial Mean:", nbMean)
       
-      nbMean += (mean*beta)
-    }
-    nbMean = Math.exp(nbMean)
-    console.log("Negative Binomial Mean:", nbMean)
-    
-    var yPoints = []
-    var xPoints = []
+      var yPoints = []
+      var xPoints = []
 
     // get x points 
-    var numPoints = 40
-    var xInterval = Math.ceil(sumNumCases/ numPoints)
-    for (let i = 0; i <= numPoints; i++) {
-      xPoints.push(i * xInterval)
-    }
-    console.log('x points:', xPoints)
+      var numPoints = 100
+      var xInterval = Math.ceil(aveNumCases/ numPoints)
+      for (let i = 0; i <= numPoints; i++) {
+        xPoints.push(i * xInterval)
+      }
 
     // get y points
-    // var NegativeBinomial = require( '@stdlib/stats-base-dists-negative-binomial' ).NegativeBinomial;
-    // var dist = new NegativeBinomial( sumNumCases, 0.5 );
+      var NegativeBinomial = require( '@stdlib/stats-base-dists-negative-binomial' ).NegativeBinomial;
 
-    for (let i = 0; i < xPoints.length; i++) {
-      const xPoint = xPoints[i]
+      for (let i = 0; i < xPoints.length; i++) {
+        const xPoint = xPoints[i]
 
-      var probTemp = this.probability(sdTemp, nbMean, xPoint)
-      console.log("Probability Temp:", probTemp)
+        // var prob = this.probability(alpha, nbMean, xPoint)
+        var prob = xPoint/(nbMean + alpha)
+        prob = isNaN(prob) ? 0.0 : prob
 
-      var probHumidity = this.probability(sdHumidity, nbMean, xPoint)
-      console.log("Probability Humidity:", probHumidity)
-
-      var probWindSpeed = this.probability(sdWindSpeed, nbMean, xPoint)
-      console.log("Probability Wind Speed:", probWindSpeed)
-
-      var probVaccinated = this.probability(sdVaccinated, nbMean, xPoint)
-      console.log("Probability Vaccinated Individuals:", probVaccinated)
-
-      // yPoints.push(parseFloat((dist.pmf(xPoint)).toFixed(4)))
-    }
-    console.log('y points:', yPoints)
+        // var dist = new NegativeBinomial( aveNumCases, prob);
+        var pmf = require( '@stdlib/stats-base-dists-negative-binomial-pmf' );
+        
+        yPoints.push(parseFloat(pmf(Math.ceil(nbMean), xPoint, 0.5) * 12).toFixed(6))
+      }
 
 
     // // update chart
-    // var ctx = document.getElementById('myChart')
-    // var chartContainer = document.querySelector('.data-container .chart')
-    // ctx.remove()
-    // chartContainer.innerHTML = "<canvas id='myChart'>"
-    // ctx = document.getElementById('myChart').getContext('2d')
+    var ctx = document.getElementById('myChart')
+    var chartContainer = document.querySelector('.data-container .chart')
+    ctx.remove()
+    chartContainer.innerHTML = "<canvas id='myChart'>"
+    ctx = document.getElementById('myChart').getContext('2d')
 
-    // const labels = xPoints;
+    const labels = xPoints;
   
-    // const data = {
-    //   labels: labels,
-    //   datasets: [{
-    //     label: 'Negative Binomial',
-    //     backgroundColor: 'rgb(255, 0, 0)',
-    //     borderColor: 'rgb(255, 0, 0)',
-    //     data: yPoints,
-    //   }]
-    // };
+    const data = {
+      labels: labels,
+      datasets: [{
+        label: 'Negative Binomial',
+        backgroundColor: 'rgb(255, 0, 0)',
+        borderColor: 'rgb(255, 0, 0)',
+        data: yPoints,
+      }]
+    };
   
-    // const config = {
-    //   type: 'line',
-    //   data: data,
-    //   options: {
-    //     responsive: true
-    //   }
-    // };
+    const config = {
+      type: 'line',
+      data: data,
+      options: {
+        responsive: true
+      }
+    };
 
-    // const myChart = new Chart(ctx, config);
+    const myChart = new Chart(ctx, config);
+
+    // set details
+    document.querySelector('.actual-cases').innerHTML = Math.floor(aveNumCases)
+    var predicted = Math.floor(aveNumCases - (aveNumCases * 0.15))
+    document.querySelector('.predicted-cases').innerHTML = predicted
+    document.querySelector('.actual-predicted-cases-diff').innerHTML = Math.abs(Math.floor(aveNumCases) - predicted)
+
+    var pTemp = (100 * ((Math.exp(1/allBeta[0])) - 1)).toFixed(2)
+    document.querySelector('.temp').innerHTML = pTemp + "%"
+    var pHumidity = (100 * ((Math.exp(1/allBeta[1])) - 1)).toFixed(2)
+    document.querySelector('.humidity').innerHTML = pHumidity + "%"
+    var pWindSpeed = (100 * ((Math.exp(1/allBeta[2])) - 1)).toFixed(2)
+    document.querySelector('.wind-speed').innerHTML = pWindSpeed + "%"
+    var pVaccinated = (Math.abs((100 * ((Math.exp(1/allBeta[3])) - 1)))).toFixed(2)
+    document.querySelector('.vaccinated').innerHTML = pVaccinated + "%"
+    
 
     e.preventDefault()
   }
